@@ -2,17 +2,35 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { prompt } = await req.json();
+    const { product } = await req.json();
 
-    // Mock AI-generated ads
-    const ads = Array.from({ length: 5 }, (_, i) => ({
-      id: i + 1,
-      text: `Ad ${i + 1} - ${prompt || "Default concept"}`,
-    }));
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { error: "Missing OPENAI_API_KEY" },
+        { status: 500 }
+      );
+    }
 
-    return NextResponse.json({ ads });
-  } catch (err) {
-    console.error("API Error:", err);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    const prompt = `Write 3 short Facebook ad copies for ${product} with headline, body, and CTA.`;
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content || "No output generated.";
+
+    return NextResponse.json({ result: text });
+  } catch (error: any) {
+    console.error("Error:", error.message);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
