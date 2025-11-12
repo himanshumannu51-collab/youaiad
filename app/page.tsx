@@ -62,16 +62,11 @@ export default function HomePage() {
         <div className="flex items-center justify-center gap-3 mb-8">
           <span
             onClick={() => setCurrency('INR')}
-            className={`cursor-pointer ${
-              currency === 'INR' ? 'text-primary font-semibold' : 'text-text-muted'
-            }`}
+            className={`cursor-pointer ${currency === 'INR' ? 'text-primary font-semibold' : 'text-text-muted'}`}
           >
             ₹ INR
           </span>
-          <div
-            className="cursor-pointer"
-            onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')}
-          >
+          <div className="cursor-pointer" onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')}>
             <span className="inline-block w-10 h-6 bg-gray-200 rounded-full relative">
               <span
                 className={`block w-5 h-5 bg-white rounded-full shadow-sm transform transition ${
@@ -82,9 +77,7 @@ export default function HomePage() {
           </div>
           <span
             onClick={() => setCurrency('USD')}
-            className={`cursor-pointer ${
-              currency === 'USD' ? 'text-primary font-semibold' : 'text-text-muted'
-            }`}
+            className={`cursor-pointer ${currency === 'USD' ? 'text-primary font-semibold' : 'text-text-muted'}`}
           >
             $ USD
           </span>
@@ -107,6 +100,7 @@ export default function HomePage() {
               Start for {currency === 'INR' ? '₹499' : '$99'}
             </button>
           </div>
+
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 hover:shadow-md transition">
             <h3 className="text-2xl font-semibold mb-4">Free Trial</h3>
             <ul className="text-left list-disc ml-5 text-text-muted mb-6 space-y-1">
