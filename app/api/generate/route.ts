@@ -2,18 +2,36 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { product } = await req.json();
+    const { product, tone, language } = await req.json();
 
     if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: "Missing OPENAI_API_KEY" },
+        { error: "Missing OpenAI API Key in environment" },
         { status: 500 }
       );
     }
 
-    const prompt = `Write 3 short Facebook ad copies for ${product} with headline, body, and CTA.`;
+    if (!product) {
+      return NextResponse.json(
+        { error: "Missing product name in request" },
+        { status: 400 }
+      );
+    }
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const prompt = `
+You are an expert ad copywriter. Create 3 short, high-performing Facebook ad copies for the product "${product}".
+Tone: ${tone}. Language: ${language}.
+Each ad must include:
+- Headline (max 8 words)
+- Body (max 30 words)
+- CTA (Call To Action)
+Format as:
+1️⃣ Headline:
+Body:
+CTA:
+`;
+
+    const openai = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -25,12 +43,20 @@ export async function POST(req: Request) {
       }),
     });
 
-    const data = await response.json();
-    const text = data.choices?.[0]?.message?.content || "No output generated.";
+    const data = await openai.json();
 
-    return NextResponse.json({ result: text });
+    if (!openai.ok) {
+      console.error("OpenAI error:", data);
+      return NextResponse.json(
+        { error: data.error?.message || "Failed to generate content" },
+        { status: 500 }
+      );
+    }
+
+    const result = data.choices?.[0]?.message?.content || "No output generated";
+    return NextResponse.json({ result });
   } catch (error: any) {
-    console.error("Error:", error.message);
+    console.error("Server error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
