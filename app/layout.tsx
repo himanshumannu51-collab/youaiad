@@ -1,21 +1,18 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
-import { ThemeProvider } from "next-themes";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "AI Ad Generator",
-  description: "Create high-converting ads instantly with AI.",
+  title: "YouAIAd — AI Ad Generator",
+  description: "Create high-performing Facebook and Instagram ads instantly with AI",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system">
-          {children}
-        </ThemeProvider>
+      <body className="bg-gradient-to-b from-white via-slate-50 to-slate-100 text-slate-900 antialiased min-h-screen">
+        {children}
       </body>
     </html>
   );
