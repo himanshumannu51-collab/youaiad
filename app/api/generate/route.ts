@@ -1,56 +1,58 @@
-// app/api/generate/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { OpenAI } from 'openai';
-import { kv } from '@vercel/kv';
+import { NextResponse } from 'next/server';
+import OpenAI from 'openai';
+import { supabase } from '@/lib/supabase';
+
+// Optional helper: classify niche for analytics
+function classify(niche: string) {
+  const text = niche.toLowerCase();
+  if (text.includes('oil') || text.includes('cream')) return { category: 'beauty', tone: 'trust' };
+  if (text.includes('restaurant') || text.includes('food')) return { category: 'restaurant', tone: 'offer' };
+  if (text.includes('saree') || text.includes('shirt')) return { category: 'fashion', tone: 'aspirational' };
+  return { category: 'general', tone: 'neutral' };
+}
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 });
 
-const FREE_LIMIT = 5; // Free tier: 5 gens/day
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { niche, language = 'english', userId = 'anonymous' } = await req.json();
+    const { niche, language } = await req.json();
+    if (!niche) return NextResponse.json({ error: 'Missing niche' }, { status: 400 });
 
-    if (!niche || niche.trim().length < 2) {
-      return NextResponse.json({ error: 'Valid niche required' }, { status: 400 });
-    }
+    const { category, tone } = classify(niche);
 
-    // === RATE LIMITING (Free Tier) ===
-    const key = `rate:${userId}`;
-    const count = await kv.incr(key);
-    if (count === 1) await kv.expire(key, 60 * 60 * 24); // 24h expiry
-
-    if (count > FREE_LIMIT) {
-      return NextResponse.json(
-        { error: 'Free limit reached. Upgrade to Pro.' },
-        { status: 429 }
-      );
-    }
-
-    // === PROMPT (Same as frontend) ===
-    const prompt = language === 'english'
-      ? `Niche: "${niche}". Write 10 DTC Facebook ads (max 12 words). Power words, proof, urgency. Score 1-10. Name Variant A-J. Pick winner. JSON only.`
-      : `Niche: "${niche}". 10 Hinglish ads (max 100 chars). Urgency, trust, emoji. Score 1-10. Name Ad A-J. Winner. JSON.`;
+    const prompt =
+      language === 'hindi'
+        ? `You are India's #1 Facebook Ads Copywriter for local ${category} businesses. Niche: ${niche}. Write in Hinglish, max 100 characters. Add urgency ("Aaj hi", "Stock khatam") and trust ("10K+ logon ne liya"). Output JSON: {"variants":["5 ads"],"roas_score":"9/10"}`
+        : `You are the world's #1 DTC Facebook Ads Copywriter for ${category}. Niche: ${niche}. Max 12 words. Use power words ("Secret","Proven","Instant") + urgency ("Limited Stock"). Output JSON: {"variants":["5 ads"],"roas_score":"9/10"}`;
 
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' },
     });
 
-    const result = completion.choices[0].message.content;
+    const raw = completion.choices[0].message?.content ?? '';
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { variants: [raw], roas_score: 'N/A' };
+    }
 
-    // === ANALYTICS (Optional: PostHog later) ===
-    console.log(`Generated for ${userId}: ${niche} (${language})`);
+    await supabase.from('requests').insert({
+      input_text: niche,
+      language,
+      category,
+      tone,
+      prompt_used: prompt,
+      model_response_raw: raw,
+      parsed_variants: parsed,
+    });
 
-    return NextResponse.json({ data: JSON.parse(result!), usage: count });
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate ads', details: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json(parsed);
+  } catch (error) {
+    console.error('Error in generate API:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
