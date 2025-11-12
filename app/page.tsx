@@ -1,187 +1,132 @@
 'use client';
-
 import { useState } from 'react';
-import { Globe, IndianRupee, Copy, Sparkles, Zap, CheckCircle } from 'lucide-react';
 
-export default function Home() {
-  const [niche, setNiche] = useState('');
-  const [language, setLanguage] = useState<'hindi' | 'english'>('hindi');
-  const [result, setResult] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // ✅ Generate ads by calling your backend API
-  const generate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!niche) return;
-
-    setIsLoading(true);
-    setResult(null);
-
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ niche, language }),
-      });
-
-      const data = await res.json();
-      setResult(data);
-    } catch (err) {
-      console.error('Error generating ads:', err);
-      alert('Something went wrong while generating ads.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // ✅ Copy single ad
-  const copyAd = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
-  };
-
-  // ✅ Copy all ads
-  const copyAll = () => {
-    if (!result?.variants) return;
-    const allText = result.variants.join('\n\n');
-    navigator.clipboard.writeText(allText);
-    alert('All 5 ads copied!');
-  };
+export default function HomePage() {
+  const [currency, setCurrency] = useState<'INR' | 'USD'>('INR');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-purple-900 text-white">
-      <div className="container mx-auto px-4 py-12">
-        {/* HEADER */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-black mb-4 bg-gradient-to-r from-green-400 via-yellow-400 to-blue-500 bg-clip-text text-transparent">
-            AD INTEL
-          </h1>
-          <p className="text-xl md:text-2xl text-gray-300 font-medium">
-            {language === 'hindi' ? '5 सेकंड में Facebook Ads' : '5-Second Global Ads'}
-          </p>
-          <div className="flex justify-center gap-4 mt-4 flex-wrap">
-            <span className="flex items-center gap-1 text-sm text-green-400">
-              <CheckCircle size={16} /> 10K+ Ads Generated
-            </span>
-            <span className="flex items-center gap-1 text-sm text-yellow-400">
-              <Zap size={16} /> ₹10L+ ROAS
-            </span>
+    <main className="bg-bg-light text-text-dark min-h-screen font-inter">
+      {/* Hero Section */}
+      <section className="text-center max-w-3xl mx-auto py-28 px-6">
+        <h1 className="text-5xl font-bold text-gray-900 mb-4 leading-tight">
+          Type your product → Get 5 high-ROAS ads instantly.
+        </h1>
+        <p className="text-lg text-text-muted mb-8">
+          AI-powered ad copy generator built for DTC founders. Trust-first. Growth-driven.
+        </p>
+        <button className="bg-primary hover:bg-[#005FCC] text-white px-6 py-3 rounded-2xl font-semibold shadow-sm transition">
+          Generate 5 Ads Now
+        </button>
+      </section>
+
+      {/* Proof / Metrics Section */}
+      <section className="max-w-4xl mx-auto py-12 px-6 grid md:grid-cols-3 gap-6 text-center">
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-3xl font-bold text-primary mb-2">10K+</h3>
+          <p className="text-text-muted">Ads Generated</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-3xl font-bold text-primary mb-2">₹10L+</h3>
+          <p className="text-text-muted">Total ROAS Delivered</p>
+        </div>
+        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
+          <h3 className="text-3xl font-bold text-primary mb-2">500+</h3>
+          <p className="text-text-muted">DTC Brands Onboarded</p>
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="max-w-5xl mx-auto py-24 px-6 text-center">
+        <h2 className="text-4xl font-semibold mb-10">How It Works</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <h3 className="text-xl font-semibold mb-3">1️⃣ Enter Product</h3>
+            <p className="text-text-muted">Type your product name and category in Hinglish or English.</p>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <h3 className="text-xl font-semibold mb-3">2️⃣ Generate 5 Ads + ROAS</h3>
+            <p className="text-text-muted">Our AI creates 5 unique Facebook & Instagram ads with predicted ROAS.</p>
+          </div>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+            <h3 className="text-xl font-semibold mb-3">3️⃣ Copy → Run → Profit</h3>
+            <p className="text-text-muted">Copy your best ad, launch instantly, and track higher profits.</p>
           </div>
         </div>
+      </section>
 
-        {/* LANGUAGE TOGGLE */}
-        <div className="flex justify-center gap-4 mb-8">
-          <button
-            onClick={() => setLanguage('hindi')}
-            className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 ${
-              language === 'hindi'
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-500/50'
-                : 'bg-gray-800 hover:bg-gray-700'
+      {/* Pricing Section with Toggle */}
+      <section className="max-w-4xl mx-auto py-24 px-6 text-center">
+        <h2 className="text-4xl font-semibold mb-8">Simple Pricing</h2>
+
+        {/* Currency Toggle */}
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <span
+            onClick={() => setCurrency('INR')}
+            className={`cursor-pointer ${
+              currency === 'INR' ? 'text-primary font-semibold' : 'text-text-muted'
             }`}
           >
-            <IndianRupee size={20} /> Hindi (70%)
-          </button>
-          <button
-            onClick={() => setLanguage('english')}
-            className={`flex items-center gap-2 px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105 ${
-              language === 'english'
-                ? 'bg-gradient-to-r from-blue-500 to-purple-600 shadow-lg shadow-blue-500/50'
-                : 'bg-gray-800 hover:bg-gray-700'
+            ₹ INR
+          </span>
+          <div
+            className="cursor-pointer"
+            onClick={() => setCurrency(currency === 'INR' ? 'USD' : 'INR')}
+          >
+            <span className="inline-block w-10 h-6 bg-gray-200 rounded-full relative">
+              <span
+                className={`block w-5 h-5 bg-white rounded-full shadow-sm transform transition ${
+                  currency === 'USD' ? 'translate-x-4' : 'translate-x-0'
+                }`}
+              ></span>
+            </span>
+          </div>
+          <span
+            onClick={() => setCurrency('USD')}
+            className={`cursor-pointer ${
+              currency === 'USD' ? 'text-primary font-semibold' : 'text-text-muted'
             }`}
           >
-            <Globe size={20} /> English (30%)
-          </button>
+            $ USD
+          </span>
         </div>
 
-        {/* INPUT FORM */}
-        <form onSubmit={generate} className="max-w-3xl mx-auto mb-12">
-          <div className="relative">
-            <input
-              value={niche}
-              onChange={(e) => setNiche(e.target.value)}
-              placeholder={
-                language === 'hindi'
-                  ? 'प्रोडक्ट डालें (जैसे: साड़ी, हेयर ऑयल)'
-                  : 'Enter product (e.g., keto gummies, skincare)'
-              }
-              className="w-full p-6 pr-16 text-xl bg-gray-800 border-2 border-gray-700 rounded-2xl focus:border-green-500 focus:outline-none transition-all placeholder-gray-500"
-              disabled={isLoading}
-            />
-            <button
-              type="submit"
-              disabled={isLoading || !niche}
-              className="absolute right-2 top-2 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl font-bold text-lg hover:shadow-xl transform hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoading
-                ? 'Generating...'
-                : language === 'hindi'
-                ? '5 ADS बनाएं'
-                : 'GENERATE 5 ADS'}
+        {/* Pricing Cards */}
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 hover:shadow-md transition">
+            <h3 className="text-2xl font-semibold mb-4">
+              Pro Plan ({currency === 'INR' ? '₹499 / mo' : '$99 / mo'})
+            </h3>
+            <ul className="text-left list-disc ml-5 text-text-muted mb-6 space-y-1">
+              <li>Unlimited products</li>
+              <li>5 ads per product</li>
+              <li>ROAS AI scoring system</li>
+              <li>Priority support</li>
+              <li>Access to learning brain</li>
+            </ul>
+            <button className="bg-primary hover:bg-[#005FCC] text-white px-6 py-3 rounded-2xl font-semibold shadow-sm transition">
+              Start for {currency === 'INR' ? '₹499' : '$99'}
             </button>
           </div>
-        </form>
-
-        {/* OUTPUT SECTION */}
-        <div className="max-w-5xl mx-auto space-y-6">
-          {isLoading && (
-            <div className="space-y-4">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-24 bg-gray-800 rounded-2xl animate-pulse"
-                />
-              ))}
-            </div>
-          )}
-
-          {result?.variants?.length > 0 && (
-            <div className="space-y-4">
-              {result.variants.map((ad: string, i: number) => (
-                <div
-                  key={i}
-                  className="group p-6 bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl border border-gray-700 hover:border-green-500 transition-all shadow-lg"
-                >
-                  <div className="flex justify-between items-start gap-4">
-                    <p className="text-lg font-medium flex-1 leading-relaxed">
-                      {ad}
-                    </p>
-                    <button
-                      onClick={() => copyAd(ad)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity p-3 bg-green-600 hover:bg-green-500 rounded-xl shadow-md"
-                    >
-                      <Copy size={20} />
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {/* Copy All + ROAS */}
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={copyAll}
-                  className="px-6 py-3 bg-green-600 hover:bg-green-500 rounded-full font-bold text-lg shadow-md transition-all"
-                >
-                  Copy All 5 Ads
-                </button>
-
-                {result.roas_score && (
-                  <span className="inline-flex items-center gap-2 px-6 py-3 bg-yellow-500 text-black font-bold rounded-full text-lg shadow-lg">
-                    <Sparkles size={20} /> ROAS: {result.roas_score}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 hover:shadow-md transition">
+            <h3 className="text-2xl font-semibold mb-4">Free Trial</h3>
+            <ul className="text-left list-disc ml-5 text-text-muted mb-6 space-y-1">
+              <li>1 product input</li>
+              <li>5 AI-generated ads</li>
+              <li>Basic ROAS insight</li>
+            </ul>
+            <button className="border border-primary text-primary px-6 py-3 rounded-2xl font-semibold hover:bg-secondary transition">
+              Try Free
+            </button>
+          </div>
         </div>
+      </section>
 
-        {/* FOOTER */}
-        <div className="mt-16 text-center text-gray-400">
-          <p className="text-sm">
-            Built by a night-shift warrior in India | Used by 50+ Shopify stores
-            worldwide
-          </p>
-        </div>
-      </div>
-    </div>
+      {/* Footer */}
+      <footer className="text-center py-12 text-text-muted border-t border-gray-200 mt-20">
+        <p className="text-sm">
+          © 2025 YouAI Ad Tool. Built with ❤️ for DTC founders. Powered by trust × AI × growth.
+        </p>
+      </footer>
+    </main>
   );
 }
