@@ -2,65 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ----------------------------------
-   GLOBAL CLEAN SAAS STYLE SYSTEM
----------------------------------- */
-
-/* Font setup */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 html, body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background-color: #F5F5F7; /* light gray background */
+  background-color: #F5F5F7;
   color: #0F0F0F;
   scroll-behavior: smooth;
 }
 
-/* Selection color */
 ::selection {
   background-color: #007AFF;
   color: #fff;
-}
-
-/* Buttons / Inputs defaults */
-button {
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-input, textarea {
-  @apply border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 text-gray-900 outline-none;
-}
-
-input:focus, textarea:focus {
-  @apply border-primary ring-1 ring-primary;
-}
-
-/* Smooth fade animations for sections */
-section {
-  animation: fadeInUp 0.6s ease forwards;
-  opacity: 0;
-}
-
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Card hover softness */
-.card {
-  @apply bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-md transition;
-}
-
-/* Typography helpers */
-.text-gradient {
-  background: linear-gradient(to right, #007AFF, #00C26F);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
