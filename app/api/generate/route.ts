@@ -1,58 +1,75 @@
-import { NextResponse } from "next/server";
-import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
+'use client';
+import { useState } from 'react';
 
-// Create Supabase + OpenAI clients
-const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_KEY!
-);
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+export default function HomePage() {
+  const [product, setProduct] = useState('');
+  const [ads, setAds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-export async function POST(req: Request) {
-  try {
-    const { product } = await req.json();
-
+  const generateAds = async () => {
+    setError('');
     if (!product) {
-      return NextResponse.json({ error: "Product name is required" }, { status: 400 });
+      setError('Please enter a product name first.');
+      return;
     }
 
-    // Ask OpenAI to generate 5 ads
-    const prompt = `Generate 5 short, persuasive Facebook ads for a DTC product called "${product}".
-Each ad should be less than 20 words, include emotion and a clear CTA.
-Return the ads as a JSON array of strings called "ads".`;
+    setLoading(true);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product }),
+      });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      response_format: { type: "json_object" },
-    });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || 'Something went wrong.');
+        setLoading(false);
+        return;
+      }
 
-    // Parse the response
-    const text = completion.choices[0]?.message?.content ?? "{}";
-    const data = JSON.parse(text);
-    const ads = data.ads || [];
-
-    // Save to Supabase in the existing 'requests' table
-    const { error } = await supabase.from("requests").insert({
-      input_text: product,
-      model_response_raw: JSON.stringify(data),
-      parsed_variants: ads,
-      created_at: new Date(),
-    });
-
-    if (error) {
-      console.error("❌ Supabase insert error:", error.message);
-    } else {
-      console.log("✅ Supabase insert success");
+      const data = await res.json();
+      setAds(data.ads || []);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Return ads to the frontend
-    return NextResponse.json({ ads });
-  } catch (err: any) {
-    console.error("❌ Error generating ads:", err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
+  return (
+    <main className="bg-bg-light text-text-dark min-h-screen font-inter">
+      <section className="text-center max-w-3xl mx-auto py-28 px-6">
+        <h1 className="text-5xl font-bold mb-6">Type your product → Get 5 high-ROAS ads instantly</h1>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+          <input
+            type="text"
+            placeholder="e.g. Organic Coffee"
+            value={product}
+            onChange={(e) => setProduct(e.target.value)}
+            className="border border-gray-200 rounded-2xl px-5 py-3 bg-white shadow-sm w-full sm:w-96"
+          />
+          <button
+            onClick={generateAds}
+            disabled={loading}
+            className="bg-primary hover:bg-[#005FCC] text-white px-6 py-3 rounded-2xl font-semibold shadow-sm transition disabled:opacity-50"
+          >
+            {loading ? 'Generating...' : 'Generate 5 Ads'}
+          </button>
+        </div>
+
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+
+        {ads.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 max-w-2xl mx-auto text-left">
+            {ads.map((ad, i) => (
+              <p key={i} className="mb-3">• {ad}</p>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
+  );
 }
